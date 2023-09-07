@@ -1,0 +1,176 @@
+@startuml Marketplace
+
+!define MAIN_COLOR #E6E6FA
+!define SUB_COLOR #ADD8E6
+!define BACKGROUND_COLOR white
+
+package "View layer" <<Rectangle>> {
+    class CartView {
+        -userService: UserServiceImpl
+        -productService: ProductServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+
+    class OrderView {
+        -orderService: OrderServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+
+    class UserRegView {
+        -userService: UserServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+
+    class UserAuthView {
+        -userService: UserServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+
+    class UserView {
+        -userService: UserServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+    class ProductView {
+        -productService: ProductServiceImpl
+        +renderView(): void
+    }
+
+    class CatalogSearchView {
+        -productService: ProductServiceImpl
+        +renderView(): void
+        +submitForm(): void
+    }
+
+}
+
+package "Busines logic layer" <<Rectangle>> {
+    interface IUserService {
+        -userRepo: UserDataRepoImpl
+        -orderRepo: OrderRepoImpl
+        +registerUser():void
+        +authUser(userName: string, password: string): bool
+        +updateUserData(): UserModel
+        +getUserData(): void
+        +addToCart(productId: long): void
+        +removeFromCart(itemId: int): void
+        +getCartItems(): List<ProductModel>
+        +placeOrder(): void
+        +payOrder(orderId: long): void
+        +getOrderList(): List<OrderModel>
+        +getOrder(orderId: long): OrderModel
+
+    }
+
+    interface IProductService {
+        +getProductCard()
+        +getCatalog()
+    }
+
+    class UserServiceImpl implements IUserService{
+    }
+
+    class ProductServiceImpl implements IProductService{
+    }
+}
+package "Data layer" <<Database>> {
+    interface IUserDataRepo {
+        +saveUserData(user: UserModel): void
+        +getUserData(userId: long): UserModel
+        +authUser(userName: string,password: string ):bool
+        +newUser(user: UserModel): void
+    }
+
+    interface IProductRepo {
+        +getProductList(searchStr:string): List<ProductModel>
+        +getProduct(prodictId: long): Product
+    }
+
+    interface IOrderRepo {
+        +getOrders(userId: long): List<OrderModel>
+        +placeOrder(userId: long, order:OrderModel): void
+        +payOrder(orderId: long): void
+    }
+
+    class UserDataRepoImpl implements IUserDataRepo {
+        -users: List<UserModel>
+    }
+
+    class ProductRepoImpl implements IProductRepo {
+        -products: List<ProductModel>
+    }
+
+    class OrderRepoImpl implements IOrderRepo {
+        -orders: List<OrderModel>
+    }
+
+    class UserModel {
+        +userCart: UserCartModel
+        +orders: List<OrderModel>
+        +name: string
+        +email: string
+        +password: string
+    }
+
+    class ProductModel {
+        +id: long
+        +name: string
+        +price: string
+        +imageFile: string
+    }
+    class OrderModel {
+        +id: long
+        +date: DateTime
+        +userId: Long
+        +products: List<ProductModel>
+        +orderStatus: OrderStatus
+    }
+
+    class UserCartModel {
+        +userId: long
+        +items: List<ProductModel>
+    }
+
+    enum OrderStatus {
+        CREATED
+        PAYMENT_PENDING
+        PROCESSING
+        SHIPPED
+        DELIVERED
+        CANCELLED
+    }
+}
+OrderStatus --* OrderModel
+OrderModel --o UserModel
+UserCartModel --* UserModel
+ProductModel --o UserCartModel
+ProductModel --o OrderModel
+ProductView --> ProductServiceImpl
+CatalogSearchView -> ProductServiceImpl
+ProductServiceImpl --> ProductRepoImpl
+
+UserView --> UserServiceImpl
+UserAuthView --> UserServiceImpl
+UserRegView --> UserServiceImpl
+UserServiceImpl *-- UserDataRepoImpl
+UserServiceImpl *-- OrderRepoImpl
+OrderView --> UserServiceImpl
+CartView --> UserServiceImpl
+
+
+UserDataRepoImpl o-- UserModel
+ProductRepoImpl o-- ProductModel
+OrderRepoImpl o-- OrderModel
+
+' User
+
+' Product
+
+' Order
+
+
+@enduml
